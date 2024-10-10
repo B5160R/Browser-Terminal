@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Browser Terminal</title>
+    <style>
+        /* General Styling */
+        body {
+            background: radial-gradient(circle at top right, #1a1a1a, #000000);
+            color: #00ff66;
+            font-family: "Fira Code", monospace;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Terminal Container */
+        .terminal {
+            width: 80%;
+            max-width: 800px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 12px;
+            border: 1px solid #00ff66;
+            box-shadow: 0 4px 15px rgba(0, 255, 102, 0.4);
+        }
+
+        /* Terminal Output */
+        .output {
+            white-space: pre-wrap;
+            font-size: 1rem;
+            line-height: 1.6rem;
+            min-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        /* Command Input Line */
+        .command-line {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Prompt Text */
+        .prompt {
+            color: #00ff66;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        /* Input Box */
+        input {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff66;
+            color: #00ff66;
+            outline: none;
+            padding: 8px;
+            border-radius: 6px;
+            width: 100%;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        input:focus {
+            border-color: #66ff99;
+            box-shadow: 0 0 5px rgba(102, 255, 153, 0.6);
+        }
+
+        /* Link Styling */
+        a {
+            color: #00ff66;
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+        }
+
+        a:hover {
+            color: #66ff99;
+            text-decoration: underline;
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="output" id="output">Welcome to Terminal Browser. Type 'help' for commands.\n</div>
+        <div class="command-line">
+            <span class="prompt">#:</span>
+            <input type="text" id="input" autofocus autocomplete="off">
+        </div>
+    </div>
+
+    <script>
+        const outputElement = document.getElementById('output');
+        const inputElement = document.getElementById('input');
+        const maxLines = 20; // Maximum number of lines in the terminal
+
+        const commands = {
+            help: "Available commands: \n - duckduckgo\n - youtube\n - github\n - clear\n",
+            duckduckgo: "Opening DuckDuckGo...",
+            youtube: "Opening YouTube...",
+            github: "Opening GitHub...",
+            clear: "clear"
+        };
+
+        const urls = {
+            duckduckgo: "https://www.duckduckgo.com",
+            youtube: "https://www.youtube.com",
+            github: "https://www.github.com"
+        };
+
+        inputElement.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                const input = inputElement.value.trim().toLowerCase();
+                processCommand(input);
+                inputElement.value = '';
+            }
+        });
+
+        function processCommand(input) {
+            let output = `#: ${input}\n`;
+
+            if (commands[input]) {
+                if (input === 'clear') {
+                    outputElement.innerHTML = '';
+                } else {
+                    output += commands[input] + "\n";
+                    if (urls[input]) {
+                        window.open(urls[input], '_blank');
+                    }
+                }
+            } else {
+                output += `Command not found: ${input}. Type 'help' for a list of commands.\n`;
+            }
+
+            appendOutput(output);
+        }
+
+        function appendOutput(output) {
+            const newOutput = document.createElement('div');
+            newOutput.classList.add('fade-in');
+            newOutput.textContent = output;
+            outputElement.appendChild(newOutput);
+            outputElement.scrollTop = outputElement.scrollHeight;
+
+            // Limit the number of lines displayed in the terminal
+            trimOutputLines();
+        }
+
+        function trimOutputLines() {
+            const lineHeight = parseFloat(window.getComputedStyle(outputElement).lineHeight);
+            const terminalHeight = outputElement.clientHeight;
+            const maxVisibleLines = Math.floor(terminalHeight / lineHeight);
+
+            const outputLines = outputElement.innerHTML.split('\n');
+            if (outputLines.length > maxLines) {
+                // Remove older lines to maintain the max number of lines
+                outputElement.innerHTML = outputLines.slice(-maxLines).join('\n');
+            }
+        }
+    </script>
+</body>
+</html>
